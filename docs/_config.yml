@@ -34,7 +34,7 @@ baseurl: "/SashaBondarev/"
 github_username:  alex-d-bondarev
 
 # Build settings
-theme: minima
+#theme: minima
 plugins:
   - jekyll-feed
 
