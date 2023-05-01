@@ -33,6 +33,7 @@ url: "https://alex-d-bondarev.github.io"
 # the subpath of your site, e.g. /blog
 baseurl: "/SashaBondarev/"
 github_username:  alex-d-bondarev
+permalink: none
 
 # Build settings
 #theme: minima
