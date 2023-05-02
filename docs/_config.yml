@@ -28,15 +28,33 @@ description: >- # this means to ignore newlines until "domain:"
 # if you want to force HTTPS, specify the domain without the http at the start, e.g. example.com
 domain: alex-d-bondarev.github.io
 # the base hostname & protocol for your site, e.g. http://example.com
-url: "https://alex-d-bondarev.github.io"
+url: "https://alex-d-bondarev.github.io/SashaBondarev/"
 # the subpath of your site, e.g. /blog
-baseurl: "/SashaBondarev/"
+#baseurl: "/SashaBondarev/"
 github_username:  alex-d-bondarev
 
 # Build settings
-theme: minima
-plugins:
-  - jekyll-feed
+#theme: minima
+theme: minimal-mistakes-jekyll
+#minimal_mistakes_skin: "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
+minimal_mistakes_skin: "air"
+#plugins:
+#  - jekyll-feed
+atom_feed:
+  hide: true
+
+defaults:
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      author_profile: true
+      read_time: true
+      comments: true
+      share: true
+      related: false
 
 # Exclude from processing.
 # The following items will not be processed, by default.

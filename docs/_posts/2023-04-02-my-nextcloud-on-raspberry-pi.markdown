@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "How I set up a Nextcloud on a Raspberry Pi"
 date:   2023-04-02 20:02:48 +0100
 categories: jekyll update
