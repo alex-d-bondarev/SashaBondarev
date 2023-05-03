@@ -31,13 +31,17 @@ subtitle: "from Odessa"
 description: "I sometimes learn something new and occasionally decide to share it."
 
 # minimal_mistakes_skin: "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
-theme: minimal-mistakes-jekyll
+#theme: minimal-mistakes-jekyll
 remote_theme: "mmistakes/minimal-mistakes"
 minimal_mistakes_skin: "air"
 locale: "en-GB"
 plugins:
- - jekyll-remote-theme
-# - jekyll-feed
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
+  - jekyll-feed
+  - jemoji
+  - jekyll-include-cache
 atom_feed:
   hide: true
 
