@@ -32,10 +32,12 @@ description: "I sometimes learn something new and occasionally decide to share i
 
 # minimal_mistakes_skin: "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 theme: minimal-mistakes-jekyll
+remote_theme: "mmistakes/minimal-mistakes"
 minimal_mistakes_skin: "air"
 locale: "en-GB"
-# plugins:
-#  - jekyll-feed
+plugins:
+ - jekyll-remote-theme
+# - jekyll-feed
 atom_feed:
   hide: true
 
