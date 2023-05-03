@@ -19,26 +19,22 @@
 # in the templates via {{ site.myvariable }}.
 
 
-title: Sasha Bondarev
-description: >- # this means to ignore newlines until "domain:"
-  I am a senior SDET who is transitioning to a Product Management role.
-  I occasionally learn or do something interesting for me.
-  It might also be useful for others. So I try to share.
-
 # if you want to force HTTPS, specify the domain without the http at the start, e.g. example.com
 domain: alex-d-bondarev.github.io
-# the base hostname & protocol for your site, e.g. http://example.com
-url: "https://alex-d-bondarev.github.io/SashaBondarev/"
-# the subpath of your site, e.g. /blog
-#baseurl: "/SashaBondarev/"
-github_username:  alex-d-bondarev
+url: "https://alex-d-bondarev.github.io"
+baseurl: "/SashaBondarev"
+github_username: "alex-d-bondarev"
+repository: "alex-d-bondarev/SashaBondarev"
 
-# Build settings
-#theme: minima
+title: "Sasha Bondarev"
+subtitle: "from Odessa"
+description: "I sometimes learn something new and occasionally decide to share it."
+
+# minimal_mistakes_skin: "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 theme: minimal-mistakes-jekyll
-#minimal_mistakes_skin: "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 minimal_mistakes_skin: "air"
-#plugins:
+locale: "en-GB"
+# plugins:
 #  - jekyll-feed
 atom_feed:
   hide: true
@@ -49,12 +45,23 @@ defaults:
       path: ""
       type: posts
     values:
-      layout: single
       author_profile: true
-      read_time: true
       comments: true
-      share: true
+      layout: single
+      read_time: true
       related: false
+      share: true
+      show_date: true
+
+comments:
+  provider: "giscus"
+  giscus:
+    repo_id: "R_kgDOJRyktw"
+    category_name: Comments
+    category_id: "DIC_kwDOJRykt84CWPNn"
+    discussion_term: "title"
+    reactions_enabled: "1"
+    theme: "preferred_color_scheme"
 
 # Exclude from processing.
 # The following items will not be processed, by default.
