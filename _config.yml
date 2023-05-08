@@ -58,6 +58,14 @@ defaults:
       related: false
       share: true
       show_date: true
+  # _pages
+  - scope:
+      path: ""
+      type: pages
+    values:
+      author_profile: true
+      layout: single
+  # All
   - scope:
       path: ""
     values:
@@ -77,6 +85,8 @@ analytics:
   provider: "google-gtag"
   google:
     tracking_id: "G-7ZT6V3MPGT"
+
+include: ["_pages"]
 
 # Exclude from processing.
 # The following items will not be processed, by default.
