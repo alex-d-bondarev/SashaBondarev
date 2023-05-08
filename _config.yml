@@ -52,6 +52,7 @@ defaults:
       type: posts
     values:
       author_profile: true
+      classes: wide
       comments: true
       layout: single
       read_time: true
