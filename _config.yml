@@ -73,6 +73,11 @@ comments:
     reactions_enabled: "1"
     theme: "preferred_color_scheme"
 
+analytics:
+  provider: "google-gtag"
+  google:
+    tracking_id: "G-7ZT6V3MPGT"
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
