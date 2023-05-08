@@ -58,6 +58,10 @@ defaults:
       related: false
       share: true
       show_date: true
+  - scope:
+      path: ""
+    values:
+      author: sasha_bondarev
 
 comments:
   provider: "giscus"
