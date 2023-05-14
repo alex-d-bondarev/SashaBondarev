@@ -4,51 +4,42 @@ toc: true
 ---
 
 # Introduction
-Hi everyone! This post might be useful for you if you are planning to set up a home file storage server. 
-Initially I tried to explain every step, but the post grew wordy pretty quickly. 
-Instead, I have decided to minimize the number of comments and assume that you have a minimum bash knowledge.
-Also, I am using `${FOO_BAR}`-s style variables a lot, cos I believe that you might need or want to have different values.
-Finally, I believe that these steps are not limited to the Raspberry Pi, but I did not test this.
+Hi everyone! If you want to set up a home file storage server, this post can help. 
+I've left out some details assuming you know basic bash, and I use `${FOO_BAR}` style variables for flexibility. 
+Although I haven't tested these steps on other systems, I believe they'll work beyond the Raspberry Pi.
 
-One more thing: [this gist comment](https://gist.github.com/etes/aa76a6e9c80579872e5f?permalink_comment_id=2781906#gistcomment-2781906) 
-saved me a few times from reinstalling OS. I hope you do not need it, but it's always better to be prepared.
+Also, I want to highlight [this gist comment](https://gist.github.com/etes/aa76a6e9c80579872e5f?permalink_comment_id=2781906#gistcomment-2781906)
+which has saved me from having to reinstall my operating system several times. 
+Hopefully, you won't need it, but it's always good to be prepared.
 
 # Background
-On summer 2022 I have realized that I have very basic k8s skills and I need a way to improve them.
-I knew that taking k8s related course is not enough and I need to do something practical.
-At the same time, I was looking for some way to sync 250GB of family photos and videos across family laptops and phones.
-As a result I have decided to buy a single Raspberry Pi and to install "any cloud app" there using k8s.
+In the summer of 2022, I aimed to improve my basic k8s skills while syncing 250GB of family photos and videos across 
+devices. I discovered the [Nextcloud Files](https://nextcloud.com/files/) app, which is 
+[open-source](https://github.com/nextcloud), regularly updated, and supports desktop and mobile clients. 
+Though it offers office collaboration features, they weren't a priority for me.
 
-After a quick search I have stumbled on the [Nextcloud Files](https://nextcloud.com/files/) app.
-It can support desktop and mobile clients. The Nextcloud is also [opensource](https://github.com/nextcloud)
-and provides frequent releases.
+For my setup, I used two external USB drives — a smaller one for storing files and a larger one for backups. 
+I found [this compact](https://thepihut.com/collections/raspberry-pi-cases/products/ssd-cluster-case-for-raspberry-pi) 
+case that accommodated my Raspberry Pi and both drives. If you know of a smaller case that can 
+handle this setup, please let me know. To control the case fans, I utilized this 
+[fan control module](https://thepihut.com/products/auto-fan-control-module-5v-breakout-for-raspberry-pi).
 
-My setup includes 2 external USB drives. A smaller one for storing files and a bigger one for backups.
-The smallest case I found that could fit my Raspberry Pi and two external USB drives is 
-[this one](https://thepihut.com/collections/raspberry-pi-cases/products/ssd-cluster-case-for-raspberry-pi). 
-Please leave a comment if you know a smaller one that could handle that.
-The built-in case fans are not too loud, but there was no way to make them turn on and off automatically.
-I have fixed this by using this [fan control module](https://thepihut.com/products/auto-fan-control-module-5v-breakout-for-raspberry-pi).
+To avoid overburdening my Raspberry Pi, I purchased [this USB hub with a power adapter](https://www.amazon.co.uk/Sabrent-Individual-Switches-included-HB-UMP3/dp/B00TPMEOYM?ref_=ast_sto_dp&th=1&psc=1). 
+I opted to stick with the default "Raspbian GNU/Linux 11 (bullseye)" OS, as changing it wasn't appealing to me.
 
-I did not want to put too much power pressure on my Raspberry Pi, so I bought this
-[USB hub with power adapter](https://www.amazon.co.uk/Sabrent-Individual-Switches-included-HB-UMP3/dp/B00TPMEOYM?ref_=ast_sto_dp&th=1&psc=1).
+Below, you'll find the steps I took to get "Nextcloud Files" up and running. 
+I'm not an expert, so if you have any tips for a better or easier process, please share them in the comments.
 
-I did not and still don't want to change the default "Raspbian GNU/Linux 11 (bullseye)" OS, 
-since this process does not entertain me.
-
-Bellow you can find links, steps and commands I combined to get the "Nextcloud Files" running. 
-I'm not an expert in what I was doing, so please leave a comment if there is a better or easier way to perform any given step(s).
-
-# Setup
+# Installation
 ## Fresh Raspberry Pi
 1. Connect a mouse, a keyboard and a monitor to a Raspberry Pi. Follow the prompts.
-1. [Optional] Set up the VNC instead of using Peripherals per [this article](https://linuxhint.com/run-realvnc-raspberry-pi/).   
+1. Install [helm](https://helm.sh/docs/intro/install/).
+1. [Optional] Set up the VNC instead of using peripherals per [this article](https://linuxhint.com/run-realvnc-raspberry-pi/).   
 1. [Optional] Set up SSH connection per [this article](https://linuxhint.com/enable-ssh-raspberry-pi/).
 1. [Optional] Update security settings per [this article](https://raspberrytips.com/security-tips-raspberry-pi/).
-1. Install [helm](https://helm.sh/docs/intro/install/).
 
 ## Fans setup via GUI
-1. Follow "fan control module" manual.
+1. Follow the "fan control module" manual.
 1. Open Raspberry > Preferences > Raspberry Pi Configuration > Performance tab
    1. Set `Fan = true`
    1. Set `Fan GPIO = 4`
@@ -72,13 +63,14 @@ sdb           8:16   0   1.8T  0 disk
 ├─sdb1        8:17   0   200M  0 part
 └─sdb2        8:18   0   1.8T  0 part /media/2000
 ...
-# Please note that you might have different values
-$ export MAIN_USB = "dev/sda1"
-$ export BACKUP_USB = "dev/sdb2"
 ```
+**Note** that you might have different values  
+${MAIN_USB} = "dev/sda1"  
+${BACKUP_USB} = "dev/sdb2"
+{: .notice--info}
 
 ### Format USB
-For compatibility reasons, I have decided to format USB drives in ext4:
+I have decided to format USB drives in `ext4`:
 ```console
 $ sudo umount ${MAIN_USB}
 $ sudo mkfs.ext4 ${MAIN_USB}
@@ -88,18 +80,28 @@ $ sudo mkfs.ext4 ${BACKUP_USB}
 ```
 
 ### Mount USB drives
-Sometimes USB drives are not mounted after restart, so a few extra steps are required
-> **Note**: First I tried to mount using fstab, the following way:
+**New variables**  
+${BACKUP_USB_MOUNT} - path to the folder with the backup USB  
+${BACKUP_USB_UUID} - UUID from the `blkid ${BACKUP_USB}`  
+${MAIN_USB_MOUNT} - path to the folder with the main USB  
+${MAIN_USB_UUID} - UUID from the `blkid ${MAIN_USB}`  
+${USB_MOUNT_SCRIPT} - path to file with mount script  
+{: .notice--info}
+
+Sometimes USB drives did not mount after a restart, so I took a few extra steps:
+> **Note**: First, I tried to mount using fstab, the following way:
 > ```console
 > $ sudo cp /etc/fstab /etc/fstab.backup
-> 
-> # Add the following to "/etc/fstab":
+> ```
+> Add the following to "/etc/fstab":
+> ```shell
 > UUID="${MAIN_USB_UUID}" ${MAIN_USB_MOUNT} ext4 defaults,nofail,x-systemd.device-timeout=1,noatime  0       0
 > UUID="${BACKUP_USB_UUID}" ${BACKUP_USB_MOUNT} ext4 defaults,nofail,x-systemd.device-timeout=1,noatime  0       0
-> 
+> ```
+> ```console
 > $ sudo reboot
 > ```
-> But usb drives often failed to mount during boot, so I used the approach from bellow:
+> But USB drives often failed to mount during boot, so I used the approach from below:
 
 Create a `${USB_MOUNT_SCRIPT}` file with the following content:
 
@@ -136,26 +138,33 @@ Add the following:
 Inspired by [this comment](https://superuser.com/a/547124) and [this article](https://www.baeldung.com/linux/new-files-dirs-default-permission):
 
 ## Backup
-I did not want to use [rsync](https://linux.die.net/man/1/rsync) 
-and decided to use [borg](https://borgbackup.readthedocs.io) instead.
+I have decided to use [borg](https://borgbackup.readthedocs.io) for backups.
 
-`${BACKUP_SOURCE}` is path to files and `${BACKUP_REPOSITORY}` is path to backups.
+**New variables**  
+${BACKUP_LOG} - path to file with backup logs  
+${BACKUP_NAME} - the name of the backup to use in `borg`  
+${BACKUP_PATH} - path to the folder that will contain backups  
+${BACKUP_SCRIPT} - path to file with the backup script  
+${NEXTCLOUD_PATH} - path to the folder that will contain NextCloud and all related files  
+{: .notice--info}
+
+`${NEXTCLOUD_PATH}` is path to files and `${BACKUP_PATH}` is path to backups.
 
 ### Set up borg repository
 ```console
-$ touch ${BACKUP_JOB_LOG}
+$ touch ${BACKUP_LOG}
 
 $ sudo apt install borgbackup
 $ sudo su -
 
 # Setup
-$ borg init --storage-quota 1.5T --encryption=none ${BACKUP_REPOSITORY} 2> ${BACKUP_JOB_LOG}
-$ borg create --compression auto,zstd ${BACKUP_REPOSITORY}::${BACKUP_NAME}`date +%Y-%m-%d_%H:%M` ${BACKUP_SOURCE} 2> ${BACKUP_JOB_LOG}
+$ borg init --storage-quota 1.5T --encryption=none ${BACKUP_PATH} 2> ${BACKUP_LOG}
+$ borg create --compression auto,zstd ${BACKUP_PATH}::${BACKUP_NAME}`date +%Y-%m-%d_%H:%M` ${NEXTCLOUD_PATH} 2> ${BACKUP_LOG}
 
-# Restore
-$ borg list ${BACKUP_REPOSITORY}  # See available backups
-$ borg extract ${BACKUP_REPOSITORY}::${BACKUP_NAME} ${BACKUP_SOURCE} # Restore latest backup
-$ borg extract --timestamp 2022-01-01T12:00:00 ${BACKUP_REPOSITORY}::${BACKUP_NAME} ${BACKUP_SOURCE} # Restore per timestamp
+# To restore a backup:
+$ borg list ${BACKUP_PATH}  # See available backups
+$ borg extract ${BACKUP_PATH}::${BACKUP_NAME} ${NEXTCLOUD_PATH} # Restore latest backup
+$ borg extract --timestamp 2022-01-01T12:00:00 ${BACKUP_PATH}::${BACKUP_NAME} ${NEXTCLOUD_PATH} # Restore per timestamp
 
 $ exit
 ```
@@ -165,10 +174,10 @@ Create a `${BACKUP_SCRIPT}` file with the following content:
 ```shell
 #!/bin/sh
 
-echo "Backup started on `date +%Y-%m-%d_%H:%M`" >> ${BACKUP_JOB_LOG} 2>&1
-borg prune --keep-daily=7 --keep-weekly=4 --keep-monthly=6 ${BACKUP_REPOSITORY} >> ${BACKUP_JOB_LOG} 2>&1
-borg create --compression auto,zstd ${BACKUP_REPOSITORY}::${BACKUP_NAME}`date +%Y-%m-%d_%H:%M` ${BACKUP_SOURCE} >> ${BACKUP_JOB_LOG} 2>&1
-echo "Backup finished on `date +%Y-%m-%d_%H:%M`" >> ${BACKUP_JOB_LOG} 2>&1
+echo "Backup started on `date +%Y-%m-%d_%H:%M`" >> ${BACKUP_LOG} 2>&1
+borg prune --keep-daily=7 --keep-weekly=4 --keep-monthly=6 ${BACKUP_PATH} >> ${BACKUP_LOG} 2>&1
+borg create --compression auto,zstd ${BACKUP_PATH}::${BACKUP_NAME}`date +%Y-%m-%d_%H:%M` ${NEXTCLOUD_PATH} >> ${BACKUP_LOG} 2>&1
+echo "Backup finished on `date +%Y-%m-%d_%H:%M`" >> ${BACKUP_LOG} 2>&1
 ```
 Update crontab
 ```console
@@ -181,10 +190,14 @@ Add the following:
 ```
 
 ## Install k8s
-I did not plan to learn to [install vanilla k8s](https://kubernetes.io/docs/setup/). So I looked for alternatives.
+**New variables**  
+${NAMESPACE} - Kubernetes namespace for NextCloud  
+{: .notice--info}
+
+I did not plan to learn to [install vanilla k8s](https://kubernetes.io/docs/setup/). So I looked for alternatives:
 1. [Minikube](https://minikube.sigs.k8s.io/docs/) - is not supporting mounts with > 600 files by default 
    ([link](https://minikube.sigs.k8s.io/docs/handbook/mount/)). That was too few for me.
-1. I have got the following error when trying to install [MicroK8s](https://microk8s.io):
+1. I have got the error when trying to install [MicroK8s](https://microk8s.io) and failed to fix it:
    ```shell
    # error: snap "microk8s" is not available on 1.21/stable for this architecture (armhf) but exists on
    #        other architectures (amd64, arm64).
@@ -226,9 +239,18 @@ I did not plan to learn to [install vanilla k8s](https://kubernetes.io/docs/setu
    ```
 
 ### Storage
+**New variables**  
+${PERSISTENT_VOLUME_CLAIM_NAME} - PersistentVolumeClaim name. For example `next-cloud-volume-claim`  
+${PERSISTENT_VOLUME_CLAIM_YAML} - Path to `.yaml` file for PersistentVolumeClaim  
+${PERSISTENT_VOLUME_NAME} - PersistentVolume name. For example `next-cloud-volume`  
+${PERSISTENT_VOLUME_YAML} - Path to `.yaml` file for PersistentVolume  
+${STORAGE_SIZE} - NextCloud storage size. For example `123Gi`  
+{: .notice--info}
+
 You will need to create `PersistentVolume` and `PersistentVolumeClaim` for the NextCloud
+
 #### PersistentVolume
-Create `${PERSISTENT_VOLUME}.yml` file with the following contents:
+Create `${PERSISTENT_VOLUME_YAML}.yml` file with the following contents:
 ```yaml
 ---
 apiVersion: v1
@@ -245,17 +267,17 @@ spec:
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: "${BACKUP_SOURCE}"
+    path: "${NEXTCLOUD_PATH}"
 ---
 ```
 Apply the file:
 ```console
-$ kubectl apply -f ${PERSISTENT_VOLUME}.yml
+$ kubectl apply -f ${PERSISTENT_VOLUME_YAML}
 $ kubectl get pv
 ```
 
 #### PersistentVolumeClaim
-Create `${PERSISTENT_VOLUME_CLAIM}.yml` file with the following contents:
+Create `${PERSISTENT_VOLUME_CLAIM_YAML}` file with the following contents:
 ```yaml
 ---
 apiVersion: v1
@@ -274,24 +296,32 @@ spec:
 ```
 Apply the file:
 ```console
-$ kubectl apply -f ${PERSISTENT_VOLUME_CLAIM}.yml
+$ kubectl apply -f ${PERSISTENT_VOLUME_CLAIM_YAML}
 $ kubectl get pvc -n "${NAMESPACE}"
 ```
 
 ## NextCloud
+**New variables**  
+${ADMIN_NAME} - Nextcloud admin name.  
+${ADMIN_PASSWORD} - Nextcloud admin password.  
+${NEXTCLOUD_POD_NAME} - k8s NextCloud pod name. Get it like `kubectl get pods -n ${NAMESPACE}`  
+${NEXTCLOUD_VALUES_YAML} - Path to `.yaml` file for NextCloud config values.  
+${RASPBERRY_PI_IP} - IP of your Raspberry Pi in the local network.  
+{: .notice--info}
 ### Install
+
 Prepare for the NextCloud installation:
 ```console
 $ helm repo add nextcloud https://nextcloud.github.io/helm/
-$ helm show values nextcloud/nextcloud >> ${NEXTCLOUD_VALUES}.yml
+$ helm show values nextcloud/nextcloud >> ${NEXTCLOUD_VALUES_YAML}
 ```
 
-Update the following lines in the `${NEXTCLOUD_VALUES}.yml`:
+Update the following lines in the `${NEXTCLOUD_VALUES_YAML}`:
 ```yaml
 ---
 ...
 nextcloud:
-  username: ${ADMIN_LOGIN}
+  username: ${ADMIN_NAME}
   password: ${ADMIN_PASSWORD}
 ...
 persistence:
@@ -308,18 +338,18 @@ Install NextCloud:
 $ export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 $ helm install nextcloud nextcloud/nextcloud \
   --namespace ${NAMESPACE} \
-  --values ${NEXTCLOUD_VALUES}.yml
+  --values ${NEXTCLOUD_VALUES_YAML}
 ```
 
 Check that the installation was successful:
 ```console
 $ kubectl get services -n next-cloud
 ```
-Open `http://<CLUSTER-IP>:<PORT(S)>` using Raspberry Pi web browser locally or via VNC.
+Open `http://<CLUSTER-IP>:<PORT(S)>` using the Raspberry Pi web browser locally or via VNC.
 
 ### Access
 #### Config
-Append Raspberry Pi IP to `trusted_domains` in the `${BACKUP_SOURCE}/config/config.php` the following way:
+Append Raspberry Pi IP to `trusted_domains` in the `${NEXTCLOUD_PATH}/config/config.php` the following way:
 ```php
 ...
 'trusted_domains' =>
@@ -342,15 +372,15 @@ $ kubectl expose service nextcloud \
 
 ## Final Tweaks
 1. Open `http://${RASPBERRY_PI_IP}:8080`
-1. Login with `${ADMIN_LOGIN}` and `${ADMIN_PASSWORD}`
+1. Login with `${ADMIN_NAME}` and `${ADMIN_PASSWORD}`
 1. Create non-admin users
 1. Done
 
 ## Maintenance
-I have run into some issues, when I was uploading and deleting many files at once.
+I have run into some issues when I was uploading and deleting many files at once.
 To fix them I ran some commands on the `nextcloud` pod:
 ```console
-$ kubectl exec --stdin --tty ${POD_NAME} -n ${NAMESPACE} -- bash
+$ kubectl exec --stdin --tty ${NEXTCLOUD_POD_NAME} -n ${NAMESPACE} -- bash
 $ su -s /bin/bash www-data
 $ cd /var/www/html
 ```
@@ -362,7 +392,7 @@ $ php occ files:cleanup
 ```
 
 ### Deleted Files Errors
-Sometimes error was thrown for me, when I opened the Deleted files page. I have fixed this by running:
+Sometimes error was thrown for me when I opened the "Deleted files" page. I have fixed this by running:
 ```console
 $ php occ trashbin:cleanup --all-users
 ```
