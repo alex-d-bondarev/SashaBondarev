@@ -45,6 +45,7 @@ I'm not an expert in what I was doing, so please leave a comment if there is a b
 1. [Optional] Set up the VNC instead of using Peripherals per [this article](https://linuxhint.com/run-realvnc-raspberry-pi/).   
 1. [Optional] Set up SSH connection per [this article](https://linuxhint.com/enable-ssh-raspberry-pi/).
 1. [Optional] Update security settings per [this article](https://raspberrytips.com/security-tips-raspberry-pi/).
+1. Install [helm](https://helm.sh/docs/intro/install/).
 
 ## Fans setup via GUI
 1. Follow "fan control module" manual.
@@ -138,7 +139,6 @@ Inspired by [this comment](https://superuser.com/a/547124) and [this article](ht
 I did not want to use [rsync](https://linux.die.net/man/1/rsync) 
 and decided to use [borg](https://borgbackup.readthedocs.io) instead.
 
-
 `${BACKUP_SOURCE}` is path to files and `${BACKUP_REPOSITORY}` is path to backups.
 
 ### Set up borg repository
@@ -182,3 +182,187 @@ Add the following:
 
 ## Install k8s
 I did not plan to learn to [install vanilla k8s](https://kubernetes.io/docs/setup/). So I looked for alternatives.
+1. [Minikube](https://minikube.sigs.k8s.io/docs/) - is not supporting mounts with > 600 files by default 
+   ([link](https://minikube.sigs.k8s.io/docs/handbook/mount/)). That was too few for me.
+1. I have got the following error when trying to install [MicroK8s](https://microk8s.io):
+   ```shell
+   # error: snap "microk8s" is not available on 1.21/stable for this architecture (armhf) but exists on
+   #        other architectures (amd64, arm64).
+   ```
+1. I did not face issues with [k3s](https://k3s.io):
+   ```console
+   $ curl -sfL https://get.k3s.io | sh -
+   ```
+
+### Configure k3s
+1. Add `cgroup_memory=1 cgroup_enable=memory` in the end of `/boot/cmdline.txt` without adding any new lines
+1. Reboot the Raspberry Pi.
+1. Confirm install was successful:
+   ```console
+   $ sudo kubectl get nodes
+   # Expect the output similar to
+   NAME          STATUS   ROLES                  AGE   VERSION
+   raspberrypi   Ready    control-plane,master   56d   v1.25.7+k3s1
+   ```
+1. Add the following to the `/etc/rancher/k3s/config.yaml` to allow running `kubectl` without sudo:
+   ```shell
+   write-kubeconfig-mode: "0644"
+   ```
+1. Reboot the Raspberry Pi.
+1. Confirm the change was successful:
+   ```console
+   $ kubectl get nodes
+   ```
+1. Create a namespace for the NextCloud:
+   ```console
+   $ kubectl create namespace ${NAMESPACE}
+   $ kubectl get namespace
+   NAME              STATUS   AGE
+   default           Active   56d
+   kube-system       Active   56d
+   kube-public       Active   56d
+   kube-node-lease   Active   56d
+   ${NAMESPACE}      Active   48d
+   ```
+
+### Storage
+You will need to create `PersistentVolume` and `PersistentVolumeClaim` for the NextCloud
+#### PersistentVolume
+Create `${PERSISTENT_VOLUME}.yml` file with the following contents:
+```yaml
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  namespace: "${NAMESPACE}"
+  name: "${PERSISTENT_VOLUME_NAME}"
+  labels:
+    type: "local"
+spec:
+  storageClassName: "manual"
+  capacity:
+    storage: "${STORAGE_SIZE}"
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "${BACKUP_SOURCE}"
+---
+```
+Apply the file:
+```console
+$ kubectl apply -f ${PERSISTENT_VOLUME}.yml
+$ kubectl get pv
+```
+
+#### PersistentVolumeClaim
+Create `${PERSISTENT_VOLUME_CLAIM}.yml` file with the following contents:
+```yaml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: "${NAMESPACE}"
+  name: "${PERSISTENT_VOLUME_CLAIM_NAME}"
+spec:
+  storageClassName: "manual"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: "${STORAGE_SIZE}"
+---
+```
+Apply the file:
+```console
+$ kubectl apply -f ${PERSISTENT_VOLUME_CLAIM}.yml
+$ kubectl get pvc -n "${NAMESPACE}"
+```
+
+## NextCloud
+### Install
+Prepare for the NextCloud installation:
+```console
+$ helm repo add nextcloud https://nextcloud.github.io/helm/
+$ helm show values nextcloud/nextcloud >> ${NEXTCLOUD_VALUES}.yml
+```
+
+Update the following lines in the `${NEXTCLOUD_VALUES}.yml`:
+```yaml
+---
+...
+nextcloud:
+  username: ${ADMIN_LOGIN}
+  password: ${ADMIN_PASSWORD}
+...
+persistence:
+  enabled: true # Change to true
+  existingClaim: "${PERSISTENT_VOLUME_CLAIM_NAME}"
+  accessMode: ReadWriteMany
+  size: "${STORAGE_SIZE}"
+...
+---
+```
+
+Install NextCloud:
+```console
+$ export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+$ helm install nextcloud nextcloud/nextcloud \
+  --namespace ${NAMESPACE} \
+  --values ${NEXTCLOUD_VALUES}.yml
+```
+
+Check that the installation was successful:
+```console
+$ kubectl get services -n next-cloud
+```
+Open `http://<CLUSTER-IP>:<PORT(S)>` using Raspberry Pi web browser locally or via VNC.
+
+### Access
+#### Config
+Append Raspberry Pi IP to `trusted_domains` in the `${BACKUP_SOURCE}/config/config.php` the following way:
+```php
+...
+'trusted_domains' =>
+  array (
+    0 => 'localhost',
+    1 => 'nextcloud.kube.home',
+    2 => '${RASPBERRY_PI_IP}',
+  ),
+...
+```
+#### Expose locally
+```console
+$ kubectl expose service nextcloud \
+  --target-port 80 \
+  --port 8080 \
+  --name nextcloud-exp \
+  --type=LoadBalancer \
+  -n ${NAMESPACE}
+```
+
+## Final Tweaks
+1. Open `http://${RASPBERRY_PI_IP}:8080`
+1. Login with `${ADMIN_LOGIN}` and `${ADMIN_PASSWORD}`
+1. Create non-admin users
+1. Done
+
+## Maintenance
+I have run into some issues, when I was uploading and deleting many files at once.
+To fix them I ran some commands on the `nextcloud` pod:
+```console
+$ kubectl exec --stdin --tty ${POD_NAME} -n ${NAMESPACE} -- bash
+$ su -s /bin/bash www-data
+$ cd /var/www/html
+```
+### File Locks
+Sometimes I could not view, update or delete files and/or folders. I have fixed this by running:
+```console
+$ php occ files:scan --all
+$ php occ files:cleanup
+```
+
+### Deleted Files Errors
+Sometimes error was thrown for me, when I opened the Deleted files page. I have fixed this by running:
+```console
+$ php occ trashbin:cleanup --all-users
+```
