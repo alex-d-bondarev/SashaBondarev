@@ -1,36 +1,36 @@
 ---
 title: Home file storage server on the Raspberry Pi
 toc: true
+date: 2023-05-15 22:00:00 +0100
+categories: [Raspberry Pi, NextCloud, k8s, k3s, borg, file storage]
 ---
 
 # Introduction
-Hi everyone! If you want to set up a home file storage server, this post can help. 
-I've left out some details assuming you know basic bash, and I use `${FOO_BAR}` style variables for flexibility. 
-Although I haven't tested these steps on other systems, I believe they'll work beyond the Raspberry Pi.
+Hi everyone! Setting up a home file server that syncs with family devices and backs up regularly can take an evening. 
+All you need is basic bash and k8s skills and knowledge of the related software. I created a list of steps for myself 
+and am sharing it here to help others with similar goals. 
 
-Also, I want to highlight [this gist comment](https://gist.github.com/etes/aa76a6e9c80579872e5f?permalink_comment_id=2781906#gistcomment-2781906)
-which has saved me from having to reinstall my operating system several times. 
-Hopefully, you won't need it, but it's always good to be prepared.
-
-# Background
-In the summer of 2022, I aimed to improve my basic k8s skills while syncing 250GB of family photos and videos across 
-devices. I discovered the [Nextcloud Files](https://nextcloud.com/files/) app, which is 
-[open-source](https://github.com/nextcloud), regularly updated, and supports desktop and mobile clients. 
-Though it offers office collaboration features, they weren't a priority for me.
-
-For my setup, I used two external USB drives — a smaller one for storing files and a larger one for backups. 
-I found [this compact](https://thepihut.com/collections/raspberry-pi-cases/products/ssd-cluster-case-for-raspberry-pi) 
-case that accommodated my Raspberry Pi and both drives. If you know of a smaller case that can 
-handle this setup, please let me know. To control the case fans, I utilized this 
-[fan control module](https://thepihut.com/products/auto-fan-control-module-5v-breakout-for-raspberry-pi).
-
-To avoid overburdening my Raspberry Pi, I purchased [this USB hub with a power adapter](https://www.amazon.co.uk/Sabrent-Individual-Switches-included-HB-UMP3/dp/B00TPMEOYM?ref_=ast_sto_dp&th=1&psc=1). 
-I opted to stick with the default "Raspbian GNU/Linux 11 (bullseye)" OS, as changing it wasn't appealing to me.
-
-Below, you'll find the steps I took to get "Nextcloud Files" up and running. 
-I'm not an expert, so if you have any tips for a better or easier process, please share them in the comments.
+If you have any tips to simplify the process, please leave a comment. I've only tested these steps on a Raspberry Pi 
+with the default "Raspbian GNU/Linux 11 (bullseye)" OS, but I think they should work on most Linux-based systems 
+with only a few tweaks.
 
 # Installation
+## Notes
+1. To make things clearer for your specific setup, I used `${FOO_BAR}` style variables to indicate places where you might 
+   need to use different devices, folder names, etc.
+1. [This gist comment](https://gist.github.com/etes/aa76a6e9c80579872e5f?permalink_comment_id=2781906#gistcomment-2781906)
+   has saved me from having to reinstall OS several times. 
+1. I am using the [Nextcloud Files](https://nextcloud.com/files/) software. It is [open-source](https://github.com/nextcloud), 
+   regularly updated, and supports desktop and mobile clients. It also offers office collaboration features and other addons.
+1. I am using two external USB drives — a smaller one for storing files and a larger one for backups. 
+1. I am using [this](https://thepihut.com/collections/raspberry-pi-cases/products/ssd-cluster-case-for-raspberry-pi)
+   more or less compact case that accommodated my Raspberry Pi and both USB drives. Please share a link to a smaller 
+   case that can fit them, plus a fan if you know one. 
+1. I am using this [fan control module](https://thepihut.com/products/auto-fan-control-module-5v-breakout-for-raspberry-pi) 
+   to enable fan only when my Raspberry Pi becomes too hot.
+1. I am using this [USB hub with a power adapter](https://www.amazon.co.uk/Sabrent-Individual-Switches-included-HB-UMP3/dp/B00TPMEOYM?ref_=ast_sto_dp&th=1&psc=1)
+   to avoid power overburdening.
+
 ## Fresh Raspberry Pi
 1. Connect a mouse, a keyboard and a monitor to a Raspberry Pi. Follow the prompts.
 1. Install [helm](https://helm.sh/docs/intro/install/).
@@ -39,7 +39,7 @@ I'm not an expert, so if you have any tips for a better or easier process, pleas
 1. [Optional] Update security settings per [this article](https://raspberrytips.com/security-tips-raspberry-pi/).
 
 ## Fans setup via GUI
-1. Follow the "fan control module" manual.
+1. Follow the [fan control module manual](https://cdn.shopify.com/s/files/1/0176/3274/files/HATL01F-2.pdf?v=1629391085).
 1. Open Raspberry > Preferences > Raspberry Pi Configuration > Performance tab
    1. Set `Fan = true`
    1. Set `Fan GPIO = 4`
@@ -141,11 +141,11 @@ Inspired by [this comment](https://superuser.com/a/547124) and [this article](ht
 I have decided to use [borg](https://borgbackup.readthedocs.io) for backups.
 
 **New variables**  
-${BACKUP_LOG} - path to file with backup logs  
+${BACKUP_LOG} - path to file with backup logs (you should create an empty file)  
 ${BACKUP_NAME} - the name of the backup to use in `borg`  
-${BACKUP_PATH} - path to the folder that will contain backups  
+${BACKUP_PATH} - path to the folder that will contain backups (you should create an empty folder)  
 ${BACKUP_SCRIPT} - path to file with the backup script  
-${NEXTCLOUD_PATH} - path to the folder that will contain NextCloud and all related files  
+${NEXTCLOUD_PATH} - path to the folder that will contain NextCloud and all related files (you should create an empty folder)  
 {: .notice--info}
 
 `${NEXTCLOUD_PATH}` is path to files and `${BACKUP_PATH}` is path to backups.
@@ -238,6 +238,14 @@ I did not plan to learn to [install vanilla k8s](https://kubernetes.io/docs/setu
    ${NAMESPACE}      Active   48d
    ```
 
+#### High CPU Usage
+Apply [this fix](https://github.com/k3s-io/k3s/issues/4593#issuecomment-1409260954) in case you see high CPU usage:
+```console
+$ sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
+$ sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+```
+
+
 ### Storage
 **New variables**  
 ${PERSISTENT_VOLUME_CLAIM_NAME} - PersistentVolumeClaim name. For example `next-cloud-volume-claim`  
@@ -250,7 +258,7 @@ ${STORAGE_SIZE} - NextCloud storage size. For example `123Gi`
 You will need to create `PersistentVolume` and `PersistentVolumeClaim` for the NextCloud
 
 #### PersistentVolume
-Create `${PERSISTENT_VOLUME_YAML}.yml` file with the following contents:
+Create `${PERSISTENT_VOLUME_YAML}` file with the following contents:
 ```yaml
 ---
 apiVersion: v1
@@ -304,7 +312,6 @@ $ kubectl get pvc -n "${NAMESPACE}"
 **New variables**  
 ${ADMIN_NAME} - Nextcloud admin name.  
 ${ADMIN_PASSWORD} - Nextcloud admin password.  
-${NEXTCLOUD_POD_NAME} - k8s NextCloud pod name. Get it like `kubectl get pods -n ${NAMESPACE}`  
 ${NEXTCLOUD_VALUES_YAML} - Path to `.yaml` file for NextCloud config values.  
 ${RASPBERRY_PI_IP} - IP of your Raspberry Pi in the local network.  
 {: .notice--info}
@@ -370,13 +377,17 @@ $ kubectl expose service nextcloud \
   -n ${NAMESPACE}
 ```
 
-## Final Tweaks
+## Create Users
 1. Open `http://${RASPBERRY_PI_IP}:8080`
 1. Login with `${ADMIN_NAME}` and `${ADMIN_PASSWORD}`
 1. Create non-admin users
 1. Done
 
 ## Maintenance
+**New variables**  
+${NEXTCLOUD_POD_NAME} - k8s NextCloud pod name. Get it like `kubectl get pods -n ${NAMESPACE}`  
+{: .notice--info}
+
 I have run into some issues when I was uploading and deleting many files at once.
 To fix them I ran some commands on the `nextcloud` pod:
 ```console
@@ -396,3 +407,18 @@ Sometimes error was thrown for me when I opened the "Deleted files" page. I have
 ```console
 $ php occ trashbin:cleanup --all-users
 ```
+
+# Other References
+This is it. Here are a few references if you would like to learn more:
+- [Advanced Networking with Kubernetes on AWS](https://learn.acloud.guru/course/advanced-networking-with-kubernetes-for-aws/dashboard)
+- [Deploy NextCloud on Kubernetes. The self-hosted Dropbox](https://greg.jeanmart.me/2020/04/13/deploy-nextcloud-on-kuberbetes--the-self-hos/)
+- [How to build a Raspberry Pi Kubernetes Cluster with k3s](https://medium.com/thinkport/how-to-build-a-raspberry-pi-kubernetes-cluster-with-k3s-76224788576c)
+- [How to share storage between Kubernetes pods?](https://stackoverflow.com/a/36524584)
+- [Introduction to K3s](https://learn.acloud.guru/course/introduction-to-k3s/dashboard)
+- [Introduction to Kubernetes](https://learn.acloud.guru/course/introduction-to-kubernetes)
+- [Introduction to Rancher](https://learn.acloud.guru/course/introduction-to-rancher/dashboard)
+- [Kubernetes Deep Dive](https://learn.acloud.guru/course/kubernetes-deep-dive/dashboard)
+- [Kubernetes Essentials](https://learn.acloud.guru/course/2e0bad96-a602-4c91-9da2-e757d32abb8f/dashboard)
+- [Kubernetes Quick Start](https://learn.acloud.guru/course/9a0082c5-5331-492d-a677-173c393a85f7/dashboard)
+- [Simplest way to access internal resources in a K3S installation](https://stackoverflow.com/a/72554140)
+- [k3s configuration options](https://docs.k3s.io/installation/configuration)
