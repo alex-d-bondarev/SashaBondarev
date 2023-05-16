@@ -5,7 +5,7 @@ categories:
   - contact me
 ---
 
-You can contact me via my [LinkedIn](https://www.linkedin.com/in/oleksandr-d-bondarev/?locale=en_US) or by filling the following form:
+You can contact me via my [LinkedIn](https://www.linkedin.com/in/oleksandr-d-bondarev/?locale=en_US) or via the following form:
 
 {% include form.html %}
 

@@ -17,9 +17,9 @@ gem "github-pages", group: :jekyll_plugins
 gem "jekyll-remote-theme"
 gem "minimal-mistakes-jekyll"
 
-if ( ENV['JEKYLL_ENV'] != "production" )
-  gem "octopress"
-end
+# if ( ENV['JEKYLL_ENV'] != "production" )
+#   gem "octopress"
+# end
 
 # If you have any plugins, put them here!
 # group :jekyll_plugins do
