@@ -6,7 +6,7 @@ categories:
   - presentations
 ---
 
-Some of my old slides:
+Some of my slides:
 
 # Management
 - [Leadership models](https://docs.google.com/presentation/d/1w8ma8SPkBUTscy6eVajgpNn8jRv9cLzWTMsEHL0OqlQ/edit?usp=sharing)
