@@ -1,4 +1,6 @@
 main:
+  - title: "Slides"
+    url: /slides/
   - title: "About Me"
     url: /about/
   - title: "Posts"

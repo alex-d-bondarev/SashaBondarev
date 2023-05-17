@@ -71,6 +71,11 @@ defaults:
       path: ""
     values:
       author: sasha_bondarev
+  # Exclude from sitemap.xml
+  - scope:
+      path: "google*.html"
+    values:
+      sitemap: false
 
 comments:
   provider: "giscus"
