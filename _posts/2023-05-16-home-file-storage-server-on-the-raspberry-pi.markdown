@@ -1,7 +1,8 @@
 ---
 title: Home file storage server on the Raspberry Pi
 toc: true
-date: 2023-05-16 21:00:00 +0100
+date: 2023-05-16
+last_modified_at: 2023-05-21
 categories: [Raspberry Pi, NextCloud, k8s, k3s, borg, file storage]
 ---
 
@@ -254,9 +255,9 @@ You will need to create `PersistentVolume` and `PersistentVolumeClaim` for the N
 
 **New variables**  
 `${PERSISTENT_VOLUME_CLAIM_NAME}` - PersistentVolumeClaim name. For example `next-cloud-volume-claim`.  
-`${PERSISTENT_VOLUME_CLAIM_YAML}` - Path to `.yaml` file for PersistentVolumeClaim.  
+`${PERSISTENT_VOLUME_CLAIM_YAML}` - Path to a `.yaml` file with a PersistentVolumeClaim manifest.  
 `${PERSISTENT_VOLUME_NAME}` - PersistentVolume name. For example `next-cloud-volume`.  
-`${PERSISTENT_VOLUME_YAML}` - Path to `.yaml` file for PersistentVolume.  
+`${PERSISTENT_VOLUME_YAML}` - Path to a `.yaml` file with a PersistentVolume manifest.  
 `${STORAGE_SIZE}` - NextCloud (main) storage size. For example `123Gi`. This is a reminder that it should be equal or 
 less than `${MAX_BACKUP_SPACE}`.  
 {: .notice--info}
@@ -282,7 +283,7 @@ spec:
     path: "${NEXTCLOUD_PATH}"
 ---
 ```
-Apply the file:
+Apply the manifest:
 ```console
 $ kubectl apply -f ${PERSISTENT_VOLUME_YAML}
 $ kubectl get pv
@@ -306,7 +307,7 @@ spec:
       storage: "${STORAGE_SIZE}"
 ---
 ```
-Apply the file:
+Apply the manifest:
 ```console
 $ kubectl apply -f ${PERSISTENT_VOLUME_CLAIM_YAML}
 $ kubectl get pvc -n "${NAMESPACE}"
