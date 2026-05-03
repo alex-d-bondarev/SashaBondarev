@@ -54,4 +54,4 @@ User-agent: Webzio-Extended
 Disallow: /
 User-agent: YouBot
 Disallow: /
-Sitemap: https://alex-d-bondarev.github.io/SashaBondarev/sitemap.xml
+Sitemap: https://alex-d-bondarev.github.io/SashaTests/sitemap.xml
