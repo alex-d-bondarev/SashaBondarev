@@ -22,13 +22,13 @@
 # if you want to force HTTPS, specify the domain without the http at the start, e.g. example.com
 domain: alex-d-bondarev.github.io
 url: "https://alex-d-bondarev.github.io"
-baseurl: "/SashaBondarev"
+baseurl: "/SashaTests"
 github_username: "alex-d-bondarev"
-repository: "alex-d-bondarev/SashaBondarev"
+repository: "alex-d-bondarev/SashaTests"
 
-title: "Sasha Bondarev"
-subtitle: "from Odessa"
-description: "I sometimes learn something new and occasionally decide to share it."
+title: "Sasha"
+subtitle: "Tests"
+description: "I sometimes learn something new, test it and occasionally decide to share it."
 
 # minimal_mistakes_skin: "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 #theme: minimal-mistakes-jekyll
