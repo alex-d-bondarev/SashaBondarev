@@ -2,8 +2,7 @@
 title: Local LLM on my old Laptop  
 toc: true  
 date: 2026-05-13  
-last_modified_at: 2026-05-13    
-categories: [ LLM, ollama, OpenCode, gemma4, old laptop ]
+last_modified_at: 2026-05-13
 ---  
 
 A few months ago, I tried to run LLM locally. It worked on my Raspberry Pi with 4GB RAM, but very slowly.
