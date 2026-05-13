@@ -1,9 +1,9 @@
 ---  
 title: Local LLM on my old Laptop  
 toc: true  
-date: 2026-04-25  
-last_modified_at: 2026-04-25  
-categories: [ LLM, ollama, OpenCode, gemma4 ]
+date: 2026-05-13  
+last_modified_at: 2026-05-13    
+categories: [ LLM, ollama, OpenCode, gemma4, old laptop ]
 ---  
 
 A few months ago, I tried to run LLM locally. It worked on my Raspberry Pi with 4GB RAM, but very slowly.
@@ -72,7 +72,8 @@ I have also came up with 4 prompts against it:
 1. Load entire project and ask:
     ```  
     You are given a legacy project "ICU". You have to understand how it works.   
-    Your goal is to summarise issues that you have found and share a step-by-step plan to fix them.  
+    Your goal is to summarise issues that you have found and share a step-by-step 
+    plan to fix them.  
     ```
 2. Load front-end folder and ask:
     ```  
@@ -82,21 +83,38 @@ I have also came up with 4 prompts against it:
     ```
 3. Load GitHub workflow and ask:
     ```  
-    You are an experienced software architect that cares about software best practicies, such as, 
-    but not limited to scalability, testability, stability, maintainability and readability.  
-    I need you to check the `.github/workflows/build.yml` CI pipeline.  
+    You are an experienced software architect that cares about software best practicies, 
+    such as, but not limited to scalability, testability, stability, maintainability 
+    and readability. I need you to check the `.github/workflows/build.yml` CI pipeline.  
     What are your impressions about it? Would you change anything?
     ```  
 4. Pretend to be an SDET and analyze a specific step of the GitHub workflow:
     ```  
-    You are an experienced software developer in test that cares about software best practicies, such as,   
-    but not limited to tests stability, readability and maintainability.  
-    I need you to check `Verify API Endpoints` step in the `.github/workflows/build.yml` pipeline.       
-    Is it acceptable or would you change anything?    
+    You are an experienced software developer in test that cares about software best 
+    practicies, such as, but not limited to tests stability, readability and 
+    maintainability. I need you to check `Verify API Endpoints` step in the 
+    `.github/workflows/build.yml` pipeline. Is it acceptable or would you 
+    change anything?    
     ```
 
 I was able to test those prompts with a free GPT-4.1, and all 4 took around 6.5 minutes.
-That sounded like a good start. So I found a few models that should fit my laptop's RAM.
+That sounded like a good start.
+
+At this point I decided to collect a list of models that require 16GB of RAM
+or less and have a tools tag in ollama search.
+
+Here it is:
+
+| Name                                                                  | Size  | Context |  
+|-----------------------------------------------------------------------|-------|---------|  
+| [GPT-4.1](https://github.com/features/copilot/plans)                  | Cloud | 1M      |  
+| [deepseek-coder-v2:16b](https://ollama.com/library/deepseek-coder-v2) | 8.9GB | 160K    |  
+| [devstral:24b](https://ollama.com/library/devstral/tags)              | 14GB  | 128K    |  
+| [gemma4:e4b-it-q8_0](https://ollama.com/library/gemma4)               | 10GB  | 128K    |  
+| [glm4:9b-chat-q8_0](https://ollama.com/library/glm4/tags)             | 10GB  | 128K    |  
+| [gpt-oss-safeguard:20b](https://ollama.com/library/gpt-oss-safeguard) | 14GB  | 128K    |  
+| [qwen3.5:9b-mxfp8](https://ollama.com/library/qwen3.5/tags)           | 12GB  | 256K    |  
+| [starcoder2:15b-q6_K](https://ollama.com/library/starcoder2/tags)     | 13GB  | 16K     |  
 
 First, I tried `deepseek-coder-v2`, and it failed since it does not support LLM tools. Next, I tried `devstral:24b`,
 which quickly used the entire RAM on my old laptop, started to process something,
