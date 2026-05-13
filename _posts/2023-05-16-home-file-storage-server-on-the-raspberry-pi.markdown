@@ -3,7 +3,6 @@ title: Home file storage server on the Raspberry Pi
 toc: true
 date: 2023-05-16
 last_modified_at: 2023-05-21
-categories: [Raspberry Pi, NextCloud, k8s, k3s, borg, file storage]
 ---
 
 # Introduction
