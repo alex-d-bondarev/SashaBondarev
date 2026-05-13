@@ -5,11 +5,18 @@ date: 2026-05-13
 last_modified_at: 2026-05-13
 ---  
 
+Hi everyone!
+
+I have a video version in case you prefer that over reading:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/VaXjKxxVXgk?si=jOGiZxvsDqR1VrLX" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br>
+
 A few months ago, I tried to run LLM locally. It worked on my Raspberry Pi with 4GB RAM, but very slowly.
 And a small RAM limited the models I could run.
 
 Then Google released Gemma 4. So I decided to test if it can run locally on my old MacBook laptop
-with 16GB RAM and 3.1 GHz Dual-Core Intel CPU as a server via [Ollama](https://ollama.com/),
+with 16GB RAM and a 3.1 GHz Dual-Core Intel CPU as a server via [Ollama](https://ollama.com/),
 use it via [OpenCode](https://opencode.ai/) on my other laptop as a client and if it's better than other models?
 
 Of course, “better” is not a very clear word. I actually mean that it can help me with my learning, and that prompts
@@ -35,7 +42,7 @@ If not, there are a lot of great articles and courses that can describe this muc
 4. started the ollama process via `ollama serve`
 5. pulled Gemma 4 via `ollama pull gemma4:e2b-it-q4_K_M`
 
-### On my newer laptop (Client)
+### On my other laptop (Client)
 
 1. I installed [OpenCode](https://opencode.ai/)
 2. created `~/.config/opencode/opencode.json` file with the following content:
